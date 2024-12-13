@@ -91,7 +91,7 @@ require_once('config.php');
     <div class="form-container">
         <div class="form-left">
             <h4 class="mb-4">General Information</h4>
-            <form action="registration.php" method="post">
+            <form action="registration.php" method="post" id="registrationForm">
                 <div class="mb-3">
                     <label for="title" class="form-label"><b>Title</b></label>
                     <select class="form-select" id="title" name="title" required>
@@ -178,9 +178,10 @@ require_once('config.php');
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label for="email" class="form-label"><b>Email</b></label>
-                    <input type="email" class="form-control" id="email" name="email" required>
+                        <label for="email" class="form-label"><b>Email</b></label>
+                        <input type="email" class="form-control" id="email" name="email" required>
                 </div>
+
                 <div class="form-check mb-3">
                     <input class="form-check-input" type="checkbox" id="terms" required>
                     <label class="form-check-label" for="terms">
@@ -190,153 +191,73 @@ require_once('config.php');
                 <div class="row mb-3">
                   <div class="col text-center">
                       <button type="submit" class="btn btn-light me-3" id="register" name="create">Submit</button>
-                      <button type="button" class="btn btn-light" id="userListButton" data-bs-toggle="modal" data-bs-target="#userListModal">User List</button>
-
+                      <a href="userlist.php" class="btn btn-light" id="userListButton">User List</a>
                   </div>
                 </div>
-
-    
-        </div>
-    </div>
-
-
-    <div class="modal fade" id="userListModal" tabindex="-1" aria-labelledby="userListModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-          <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="userListModalLabel">User List</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody">
-                        
-                    </tbody>
-                </table>
-            </div>
-          </div>
+            </form>
         </div>
     </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="text/javascript">
-       $(function(){
-            $('#register').click(function(){
+        $(document).ready(function() {
+            $('#registrationForm').on('submit', function(e) {
+                e.preventDefault();
 
-                  var valid = this.form.checkValidity();
+                if (this.checkValidity()) {
+                    var formData = {
+                        title: $('#title').val(),
+                        firstname: $('#firstname').val(),
+                        lastname: $('#lastname').val(),
+                        birthday: $('#birthday').val(),
+                        gender: $('#gender').val(),
+                        description: $('#description').val(),
+                        address: $('#address').val(),
+                        additionalinfo: $('#additionalinfo').val(),
+                        zipcode: $('#zipcode').val(),
+                        place: $('#place').val(),
+                        country: $('#country').val(),
+                        code: $('#code').val(),
+                        phonenumber: $('#phonenumber').val(),
+                        email: $('#email').val()
+                    };
 
-                  if(valid){
-
-                  var title = $('#title').val();
-                  var firstname = $('#firstname').val();
-                  var lastname = $('#lastname').val();
-                  var birthday = $('#birthday').val();
-                  var gender = $('#gender').val();
-                  var description = $('#description').val();
-                  var address = $('#address').val();
-                  var additionalinfo = $('#additionalinfo').val();
-                  var zipcode = $('#zipcode').val();
-                  var place = $('#place').val();
-                  var country = $('#country').val();
-                  var code = $('#code').val();
-                  var phonenumber = $('#phonenumber').val();
-                  var email = $('#email').val();
-      
-                        e.preventDefault();
-
-                        $.ajax({
-                             type: 'POST',
-                             url: 'process.php',
-                             data: {title: title, firstname: firstname, lastname: lastname, birthday: birthday, gender: gender, description: description, address: address, additionalinfo: additionalinfo, zipcode: zipcode, place: place, country: country, code: code, phonenumber: phonenumber, email: email},
-
-                             success: functional(data){
-
-                             Swal.fire({
-                                'title': 'Successful',
-                                'text': 'Succesfullly Registred.',
-                                'type': 'success'
-
-                                })
-
-                             },
-                             error: functional(data){
-                              Swal.fire({
-                                'title': 'Errors',
-                                'text': 'There were errors while saving the data.',
-                                'type': 'error'
-
-                                })
-                             },
-                        });
-                        
-                  }else{
-                        ;
-                  }
-
-            });
-            
-            
-       }); 
-
-       $(document).ready(function () {
-            $('#userListButton').click(function () {
-        
-               $.ajax({
-                   url: 'fetch_users.php', 
-                   type: 'GET',
-                   success: function (response) {
-                       const users = JSON.parse(response); 
-                       let rows = '';
-                       users.forEach(user => {
-                        rows += `
-                        <tr>
-                            <td>${user.id}</td>
-                            <td>${user.firstname} ${user.lastname}</td>
-                            <td>${user.email}</td>
-                            <td>${user.phonenumber}</td>
-                            <td>
-                                <button class="btn btn-primary btn-sm editUser" data-id="${user.id}">Edit</button>
-                                <button class="btn btn-danger btn-sm deleteUser" data-id="${user.id}">Delete</button>
-                            </td>
-                        </tr>`;
-                });
-                $('#userTableBody').html(rows); 
-            },
-            error: function () {
-                alert('Failed to fetch user data.');
-            }
-        });
-        $(document).on('click', '.deleteUser', function () {
-            const userId = $(this).data('id');
-            if (confirm('Are you sure you want to delete this user?')) {
-             $.ajax({
-                url: 'delete_user.php',
-                type: 'POST',
-                data: { id: userId },
-                success: function () {
-                   alert('User deleted successfully.');
-                   $('#userListButton').trigger('click'); 
-                },
-                error: function () {
-                   alert('Failed to delete user.');
+                    $.ajax({
+                        type: 'POST',
+                        url: 'process.php',
+                        data: formData,
+                        success: function(response) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'Successfully Registered.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = 'userlist.php';
+                                }
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'There were errors while saving the data.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Validation Error!',
+                        text: 'Please fill all required fields.',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
                 }
             });
-           }
         });
-
-    });
-});
-
     </script>      
 </body>
 </html>
